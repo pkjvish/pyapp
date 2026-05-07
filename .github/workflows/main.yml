@@ -34,22 +34,28 @@ jobs:
 
       - name: Expose App to External World
         run: |
-          # Start Gunicorn on port 5000
-          # Note: 'app:app' assumes your file is app.py and flask variable is app
-          gunicorn --bind 0.0.0.0:5000 app:app & 
-          
-      - name: Run script
-        run: |
-          # 1. Kill any process using port 5000
-          # 'fuser -k' kills the process; '|| true' ensures the script continues if the port was already empty
-          sudo fuser -k 5000/tcp || true
-          
+          # 1. Force kill anything on port 5000 using lsof
+          echo "Checking for processes on port 5000..."
+          PORT_PID=$(sudo lsof -t -i:5000)
+          if [ -z "$PORT_PID" ]; then
+            echo "Port 5000 is clear."
+          else
+            echo "Killing process $PORT_PID on port 5000..."
+            sudo kill -9 $PORT_PID || true
+          fi
+
           # 2. Install tunneling tool
           sudo npm install -g localtunnel
-          
-          # 3. Start Gunicorn on port 5000
-          # Adjust 'app:app' if your filename or Flask variable is named differently
-          gunicorn --bind 0.0.0.0:5000 app:app & 
 
-          python app.py 
+          # 3. Start Gunicorn in background
+          # We use Gunicorn because it is production-ready
+          echo "Starting Gunicorn..."
+          gunicorn --bind 0.0.0.0:5000 app:app &
+
+          # 4. Wait a few seconds for Gunicorn to wake up
+          sleep 5
+
+          # 5. Start Tunnel
+          echo "Starting Tunnel..."
+          lt --port 5000
       
