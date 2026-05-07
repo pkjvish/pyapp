@@ -22,11 +22,16 @@ jobs:
           pip install gunicorn flask
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
+      - name: Start MySQL Service
+        run: |
+          sudo systemctl start mysql
+          # Set the password to match your app.py config
+          sudo mysqladmin -u root password 'password'
+
       - name: Deploy and Expose
         run: |
           # 1. Force kill anything on port 5000
           sudo lsof -t -i:5000 | xargs -r sudo kill -9 || true
-
 
           # 4. Wait for Gunicorn to stabilize
           sleep 10
