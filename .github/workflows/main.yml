@@ -26,7 +26,7 @@ jobs:
         run: |
           sudo systemctl start mysql
           # Set the password to match your app.py config
-          sudo mysqladmin -u root password 'password'
+          sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'; FLUSH PRIVILEGES;"
 
           # 4. Wait for the app to initialize
           sleep 20
