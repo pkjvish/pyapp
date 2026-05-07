@@ -1,4 +1,3 @@
 flask
 flask-mysqldb
 gunicorn
-firewalld
