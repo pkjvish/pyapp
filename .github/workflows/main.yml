@@ -20,29 +20,21 @@ jobs:
           pip install gunicorn flask
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Print Runner IP
-        run: |
-          echo "GitHub Runner Public IP:"
-          curl -s https://api.ipify.org
-          echo ""
-
       - name: Deploy and Expose
         run: |
-          # 1. Clear port 5000
+          # 1. Force kill anything on port 5000
           sudo lsof -t -i:5000 | xargs -r sudo kill -9 || true
 
-          # 2. Install Ngrok
-          curl -s https://amazonaws.com | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
-          echo "deb https://amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
-          sudo apt update && sudo apt install ngrok
+          # 2. Install LocalTunnel via npm (standard on GitHub runners)
+          sudo npm install -g localtunnel
 
           # 3. Start Gunicorn in background
+          # Ensure your file is app.py and flask variable is app
           gunicorn --bind 0.0.0.0:5000 app:app &
 
-          # 4. Wait for Gunicorn to start
-          sleep 5
+          # 4. Wait for Gunicorn to stabilize
+          sleep 10
 
-          # 5. Start Tunnel (Requires no auth for basic use, but limited)
-          # This will output your public URL in the logs
-          echo "Creating Public Tunnel..."
-          ngrok http 5000
+          # 5. Create Public Tunnel
+          # This will print your public URL in the logs
+          lt --port 5000
