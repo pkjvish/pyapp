@@ -34,16 +34,10 @@ jobs:
 
       - name: Expose App to External World
         run: |
-          # Install tunneling tool
-          sudo npm install -g localtunnel
-          
           # Start Gunicorn on port 5000
           # Note: 'app:app' assumes your file is app.py and flask variable is app
           gunicorn --bind 0.0.0.0:5000 app:app & 
           
-          # Create tunnel for port 5000
-          lt --port 5000
-
       - name: Run script
         run: python app.py 
       
