@@ -43,6 +43,6 @@ jobs:
           gunicorn --bind 0.0.0.0:5000 app:app &
           
           # 4. Give the app 5 seconds to start up
-          sleep 10
+          sleep 30
 
       
