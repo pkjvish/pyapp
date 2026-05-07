@@ -8,8 +8,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Check Runner IP
-        run: curl https://api.ipify.org
+
+      - name: Print Runner IPs
+        run: |
+          echo "🌐 External (Public) IP:"
+          curl -s https://ipify.org
+          echo -e "\n"
+
+          echo "🏠 Local (Private) IP:"
+          hostname -I | awk '{print $1}'
         
       - name: Set up Python
         uses: actions/setup-python@v5
