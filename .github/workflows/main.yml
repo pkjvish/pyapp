@@ -8,8 +8,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Greet the user
-        run: echo "Hello, GitHub Actions!"
+      - name: Check Runner IP
+        run: curl https://api.ipify.org
+        
       - name: Checkout repository
         uses: actions/checkout@v4  # Pulls your code onto the runner
 
@@ -38,7 +39,8 @@ jobs:
           sudo lsof -t -i:5000 | xargs -r sudo kill -9 || true
           
           # 3. Start your app in the background
-          python app.py & 
+          echo "Starting Gunicorn..."
+          gunicorn --bind 0.0.0.0:5000 app:app &
           
           # 4. Give the app 5 seconds to start up
           sleep 10
