@@ -39,5 +39,17 @@ jobs:
           gunicorn --bind 0.0.0.0:5000 app:app & 
           
       - name: Run script
-        run: python app.py 
+        run: |
+          # 1. Kill any process using port 5000
+          # 'fuser -k' kills the process; '|| true' ensures the script continues if the port was already empty
+          sudo fuser -k 5000/tcp || true
+          
+          # 2. Install tunneling tool
+          sudo npm install -g localtunnel
+          
+          # 3. Start Gunicorn on port 5000
+          # Adjust 'app:app' if your filename or Flask variable is named differently
+          gunicorn --bind 0.0.0.0:5000 app:app & 
+
+          python app.py 
       
