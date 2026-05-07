@@ -8,41 +8,41 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Check Runner IP
-        run: curl https://api.ipify.org
-        
-      - name: Checkout repository
-        uses: actions/checkout@v4  # Pulls your code onto the runner
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'   # Specify your preferred version
+          python-version: '3.10'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install gunicorn flask
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          
-      - name: Check Runner IP
-        run: curl https://api.ipify.org
 
-      - name: Print Runner Public IP
+      - name: Print Runner IP
         run: |
-          echo "The Runner's Public IP is:"
-          curl https://ipify.org
+          echo "GitHub Runner Public IP:"
+          curl -s https://api.ipify.org
           echo ""
 
-      - name: Expose App to External World
+      - name: Deploy and Expose
         run: |
-          # 1. Kill process only if it exists (prevents Exit Code 1)
+          # 1. Clear port 5000
           sudo lsof -t -i:5000 | xargs -r sudo kill -9 || true
-          
-          # 3. Start your app in the background
-          echo "Starting Gunicorn..."
-          gunicorn --bind 0.0.0.0:5000 app:app &
-          
-          # 4. Give the app 5 seconds to start up
-          sleep 30
 
-      
+          # 2. Install Ngrok
+          curl -s https://amazonaws.com | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+          echo "deb https://amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+          sudo apt update && sudo apt install ngrok
+
+          # 3. Start Gunicorn in background
+          gunicorn --bind 0.0.0.0:5000 app:app &
+
+          # 4. Wait for Gunicorn to start
+          sleep 5
+
+          # 5. Start Tunnel (Requires no auth for basic use, but limited)
+          # This will output your public URL in the logs
+          echo "Creating Public Tunnel..."
+          ngrok http 5000
