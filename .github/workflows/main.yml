@@ -28,6 +28,9 @@ jobs:
           # Set the password to match your app.py config
           sudo mysqladmin -u root password 'password'
 
+          # 4. Wait for the app to initialize
+          sleep 20
+
       - name: Deploy and Expose
         run: |
           # 1. Force kill anything on port 5000
