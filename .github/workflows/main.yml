@@ -44,9 +44,6 @@ jobs:
             sudo kill -9 $PORT_PID || true
           fi
 
-          # 2. Install tunneling tool
-          sudo npm install -g localtunnel
-
           # 3. Start Gunicorn in background
           # We use Gunicorn because it is production-ready
           echo "Starting Gunicorn..."
@@ -55,7 +52,4 @@ jobs:
           # 4. Wait a few seconds for Gunicorn to wake up
           sleep 5
 
-          # 5. Start Tunnel
-          echo "Starting Tunnel..."
-          lt --port 5000
       
