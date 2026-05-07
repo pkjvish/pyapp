@@ -39,6 +39,7 @@ jobs:
             sleep 2
           done
           echo "✅ MySQL is UP and running!"
+          echo "'root'@'localhost'"
 
           
           # Set the password to match your app.py config
