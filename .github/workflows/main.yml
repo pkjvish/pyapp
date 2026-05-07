@@ -27,16 +27,18 @@ jobs:
           # 1. Force kill anything on port 5000
           sudo lsof -t -i:5000 | xargs -r sudo kill -9 || true
 
-          # 2. Install LocalTunnel via npm (standard on GitHub runners)
-          sudo npm install -g localtunnel
-
-          # 3. Start Gunicorn in background
-          # Ensure your file is app.py and flask variable is app
-          gunicorn --bind 0.0.0.0:5000 app:app &
 
           # 4. Wait for Gunicorn to stabilize
           sleep 10
 
-          # 5. Create Public Tunnel
-          # This will print your public URL in the logs
+          # 2. Install LocalTunnel
+          sudo npm install -g localtunnel
+
+          # 3. RUN THE APP DIRECTLY (This replaces Gunicorn)
+          python app.py &
+
+          # 4. Wait for the app to initialize
+          sleep 10
+
+          # 5. Start the tunnel
           lt --port 5000
