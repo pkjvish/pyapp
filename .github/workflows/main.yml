@@ -31,6 +31,15 @@ jobs:
         run: |
           # 1. Start MySQL service
           sudo systemctl start mysql
+
+          # 2. Wait and Ping until MySQL is actually responding
+          echo "Waiting for MySQL to be ready..."
+          until sudo mysqladmin ping -h "localhost" --silent; do
+            echo "MySQL is still starting up... waiting 2 seconds"
+            sleep 2
+          done
+          echo "✅ MySQL is UP and running!"
+
           
           # Set the password to match your app.py config
           sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'; FLUSH PRIVILEGES;"
