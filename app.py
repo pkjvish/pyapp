@@ -31,35 +31,27 @@ def get_users():
     rows = cur.fetchall()
     return jsonify(rows)
 
-@app.route('/setdb')
-def set_db():
+@app.route('/users', methods=['GET'])
+def add_user():
+    # Extract query parameters from the URL string
+    name = request.args.get('name')
+    email = request.args.get('email')
+
+    # Safety validation check to make sure both values are present
+    if not name or not email:
+        return jsonify({"error": "Missing query parameters. Please provide name and email."}), 400
+
     try:
         cur = mysql.connection.cursor()
-        print('connection start')
-        
-        # 1. Create Database (if it doesn't exist)
-        cur.execute("CREATE DATABASE IF NOT EXISTS crud_db")
-        print('DB created')
-        
-        # 2. Switch to the database
-        cur.execute("USE crud_db")
-        print('using DB')
-        
-        # 3. Create Table
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS tbl_user (
-                user_id INT AUTO_INCREMENT PRIMARY KEY,
-                user_name VARCHAR(45) NOT NULL,
-                user_email VARCHAR(45) NOT NULL
-            )
-        """)
-        print('table created')
-        
+        # Insert extracted URL parameters into the database
+        cur.execute("INSERT INTO tbl_user(user_name, user_email) VALUES (%s, %s)", (name, email))
         mysql.connection.commit()
         cur.close()
-        return jsonify({"message": "Database and Table created successfully!"}), 200
+        return jsonify({"message": f"User '{name}' added successfully!"}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
