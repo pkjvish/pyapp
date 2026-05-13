@@ -25,92 +25,107 @@ def get_all_users_list(cursor):
         })
     return user_list
 
-# SPA Dashboard UI Template
+# Redesigned Bootstrap 5 SPA Dashboard UI Template
 DASHBOARD_HTML = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flask SPA Dashboard</title>
-    <script src="jsdelivr.net"></script>
+    <title>Flask Bootstrap SPA Dashboard</title>
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="jsdelivr.net" rel="stylesheet">
+    <!-- Bootstrap Icons CDN -->
+    <link href="jsdelivr.net" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .card { border: none; border-radius: 12px; }
+        .table-container { border-radius: 12px; overflow: hidden; }
+    </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-900 antialiased">
-    <div class="mx-auto max-w-5xl px-4 py-8">
+<body>
+    <div class="container py-5">
         
         <!-- Header -->
-        <header class="mb-8 flex items-center justify-between border-b border-slate-200 pb-4">
+        <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center border-b pb-3 mb-4">
             <div>
-                <h1 class="text-3xl font-black tracking-tight text-indigo-600">Single Page Application</h1>
-                <p class="mt-1 text-sm text-slate-500">Add or remove users instantly without page reloads</p>
+                <h1 class="fw-black text-primary display-6 mb-1"><i class="bi bi-layers-half"></i> Single Page Application</h1>
+                <p class="text-muted mb-0">Manage your MySQL database directory cleanly on a single page.</p>
             </div>
-            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-600/20">
-                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Live SPA Mode
-            </span>
+            <div class="mt-2 mt-md-0">
+                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2">
+                    <i class="bi bi-circle-fill me-1 small"></i> Live SPA Mode
+                </span>
+            </div>
         </header>
 
-        <!-- Status Toast Notifications -->
-        <div id="toast" class="hidden mb-6 p-4 rounded-xl text-sm font-medium transition shadow-sm border"></div>
+        <!-- Dynamic Status Alerts -->
+        <div id="statusAlert" class="alert d-none mb-4" role="alert"></div>
 
-        <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
-            <!-- Sidebar Actions Column -->
-            <div class="space-y-6 md:col-span-1">
-                <!-- Add User Form -->
-                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h3 class="mb-4 text-base font-bold text-slate-800">➕ Add New User</h3>
-                    <form id="addForm" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Full Name</label>
-                            <input type="text" id="addName" required placeholder="Pankaj Kumar" 
-                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+        <div class="row g-4">
+            <!-- Left Sidebars Forms -->
+            <div class="col-12 col-md-4">
+                
+                <!-- Add User Card -->
+                <div class="card shadow-sm border p-4 mb-4 bg-white">
+                    <h5 class="card-title fw-bold text-dark mb-3">
+                        <i class="bi bi-person-plus-fill text-primary"></i> Add New User
+                    </h5>
+                    <form id="addForm">
+                        <div class="mb-3">
+                            <label class="form-label text-uppercase text-muted fw-bold small">Full Name</label>
+                            <input type="text" id="addName" required placeholder="Pankaj Kumar" class="form-control form-control-lg fs-6">
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Email Address</label>
-                            <input type="email" id="addEmail" required placeholder="pankaj@example.com" 
-                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <div class="mb-3">
+                            <label class="form-label text-uppercase text-muted fw-bold small">Email Address</label>
+                            <input type="email" id="addEmail" required placeholder="pankaj@example.com" class="form-control form-control-lg fs-6">
                         </div>
-                        <button type="submit" class="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
-                            Save User
+                        <button type="submit" class="btn btn-primary w-100 fw-semibold py-2">
+                            <i class="bi bi-check-circle-fill"></i> Save User
                         </button>
                     </form>
                 </div>
 
-                <!-- Delete User Form -->
-                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h3 class="mb-4 text-base font-bold text-slate-800">🗑️ Delete User by Name</h3>
-                    <form id="deleteForm" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">User Name</label>
-                            <input type="text" id="deleteName" required placeholder="Exact name to delete" 
-                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                <!-- Delete User Card -->
+                <div class="card shadow-sm border p-4 bg-white">
+                    <h5 class="card-title fw-bold text-dark mb-3">
+                        <i class="bi bi-person-x-fill text-danger"></i> Delete User by Name
+                    </h5>
+                    <form id="deleteForm">
+                        <div class="mb-3">
+                            <label class="form-label text-uppercase text-muted fw-bold small">User Name</label>
+                            <input type="text" id="deleteName" required placeholder="Exact name to delete" class="form-control form-control-lg fs-6">
                         </div>
-                        <button type="submit" class="w-full rounded-lg bg-rose-600 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 transition">
-                            Delete User
+                        <button type="submit" class="btn btn-danger w-100 fw-semibold py-2">
+                            <i class="bi bi-trash3-fill"></i> Delete User
                         </button>
                     </form>
                 </div>
+                
             </div>
 
-            <!-- SPA Live User Directory Table -->
-            <div class="md:col-span-2">
-                <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                    <div class="border-b border-slate-100 bg-slate-50/70 px-6 py-4 flex justify-between items-center">
-                        <h3 class="text-base font-bold text-slate-800">📋 Active Database Directory</h3>
-                        <a href="/users" target="_blank" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline">Raw JSON Engine ↗</a>
+            <!-- Right User List Table -->
+            <div class="col-12 col-md-8">
+                <div class="card shadow-sm border bg-white table-container">
+                    <div class="card-header bg-light border-0 px-4 py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-table"></i> Active Database Directory</h5>
+                        <a href="/users" target="_blank" class="btn btn-sm btn-link text-decoration-none fw-semibold">
+                            Raw JSON Engine <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
                     </div>
                     
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-sm">
-                            <thead>
-                                <tr class="border-b border-slate-200 bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
-                                    <th class="px-6 py-3">ID</th>
-                                    <th class="px-6 py-3">User Name</th>
-                                    <th class="px-6 py-3">User Email</th>
-                                    <th class="px-6 py-3 text-right">Action</th>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light text-uppercase fs-7 text-muted border-bottom">
+                                <tr>
+                                    <th class="px-4 py-3">ID</th>
+                                    <th class="py-3">User Name</th>
+                                    <th class="py-3">User Email</th>
+                                    <th class="px-4 py-3 text-end">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="userTableBody" class="divide-y divide-slate-100">
-                                <!-- JavaScript dynamically renders rows here -->
+                            <tbody id="userTableBody">
+                                <!-- Asynchronous script appends rows here -->
                             </tbody>
                         </table>
                     </div>
@@ -119,20 +134,20 @@ DASHBOARD_HTML = """
         </div>
     </div>
 
-    <!-- AJAX SPA Engine Logic -->
+    <!-- AJAX JavaScript Engine -->
     <script>
-        // Shared Headers config so Flask recognizes the Dashboard Client
         const dashboardHeaders = { 'X-Requested-From': 'Dashboard' };
 
-        function showToast(message, isSuccess = true) {
-            const toast = document.getElementById('toast');
-            toast.className = `p-4 mb-6 rounded-xl text-sm font-medium transition shadow-sm border ${
-                isSuccess ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'
-            }`;
-            toast.innerText = message;
+        function displayAlert(message, isSuccess = true) {
+            const alertBox = document.getElementById('statusAlert');
+            alertBox.className = `alert mb-4 d-block ${isSuccess ? 'alert-success' : 'alert-danger'}`;
+            alertBox.innerHTML = isSuccess ? `<i class="bi bi-check-circle-fill me-2"></i> ${message}` : `<i class="bi bi-exclamation-triangle-fill me-2"></i> ${message}`;
+            
+            // Auto hide after 4 seconds
+            setTimeout(() => { alertBox.className = 'alert d-none'; }, 4000);
         }
 
-        // 1. ASYNC FETCH: Load Users Into Table Without Refreshing
+        // 1. FETCH ASYNC: Load users into bootstrap rows
         async function fetchUsers() {
             try {
                 const response = await fetch('/users', { headers: dashboardHeaders });
@@ -141,28 +156,30 @@ DASHBOARD_HTML = """
                 tbody.innerHTML = '';
 
                 if(users.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-10 text-center text-slate-400 italic">No user profiles found on disk.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-muted italic"><i class="bi bi-folder-symlink h3 d-block text-muted"></i>No user profiles found on disk.</td></tr>`;
                     return;
                 }
 
                 users.forEach(user => {
                     tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50/80 transition">
-                            <td class="px-6 py-4 font-mono font-bold text-slate-400">#${user.user_id}</td>
-                            <td class="px-6 py-4 font-semibold text-slate-900">${user.user_name}</td>
-                            <td class="px-6 py-4 text-slate-600">${user.user_email}</td>
-                            <td class="px-6 py-4 text-right">
-                                <button onclick="quickDelete('${user.user_name}')" class="rounded-md bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-600 hover:bg-rose-100 transition">Remove</button>
+                        <tr>
+                            <td class="px-4 font-monospace text-muted fw-bold">#${user.user_id}</td>
+                            <td class="fw-semibold text-dark">${user.user_name}</td>
+                            <td class="text-secondary">${user.user_email}</td>
+                            <td class="px-4 text-end">
+                                <button onclick="quickDelete('${user.user_name}')" class="btn btn-sm btn-outline-danger px-3">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
                             </td>
                         </tr>
                     `;
                 });
             } catch (err) {
-                showToast("Could not sync data directory.", false);
+                displayAlert("Could not connect to database directory pipeline.", false);
             }
         }
 
-        // 2. ASYNC POST: Add user instantly
+        // 2. POST ASYNC: Add entries 
         document.getElementById('addForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('addName').value;
@@ -170,16 +187,16 @@ DASHBOARD_HTML = """
 
             const res = await fetch(`/userc?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`, { headers: dashboardHeaders });
             if(res.ok) {
-                showToast(`User "${name}" saved successfully!`);
+                displayAlert(`User "${name}" has been appended to active records.`);
                 document.getElementById('addForm').reset();
                 fetchUsers();
             } else {
                 const data = await res.json();
-                showToast(data.error || "Failed to add user.", false);
+                displayAlert(data.error || "Failed to append user.", false);
             }
         });
 
-        // 3. ASYNC DELETE: Remove user instantly
+        // 3. DELETE ASYNC: Wipe line records
         document.getElementById('deleteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('deleteName').value;
@@ -190,16 +207,17 @@ DASHBOARD_HTML = """
         async function quickDelete(name) {
             const res = await fetch(`/userd?name=${encodeURIComponent(name)}`, { headers: dashboardHeaders });
             if(res.ok) {
-                showToast(`User "${name}" removed successfully.`);
+                displayAlert(`User "${name}" has been wiped from data maps.`);
                 fetchUsers();
             } else {
-                showToast(`User "${name}" could not be found.`, false);
+                displayAlert(`User "${name}" could not be located in database.`, false);
             }
         }
 
-        // Initial Load on bootup
         window.onload = fetchUsers;
     </script>
+    <!-- Bootstrap Bundle JS CDN -->
+    <script src="jsdelivr.net"></script>
 </body>
 </html>
 """
@@ -212,11 +230,9 @@ def list_all_users():
         user_list = get_all_users_list(cur)
         cur.close()
         
-        # If the request comes from the Web Dashboard SPA, don't append instructional string
         if request.headers.get('X-Requested-From') == 'Dashboard':
             return jsonify(user_list), 200
             
-        # Otherwise, append layout rules for direct URL lookups
         user_list.append({
             "instruction": "To add a user, go to /userc?name=abc&email=abc.com. To delete a user, go to /userd?name=abc"
         })
@@ -244,11 +260,9 @@ def add_user_via_url():
         user_list = get_all_users_list(cur)
         cur.close()
         
-        # If it's a dashboard background request, return clean data right away
         if request.headers.get('X-Requested-From') == 'Dashboard':
             return jsonify(user_list), 201
             
-        # If run directly via address bar URL, append instruction block
         user_list.append({
             "instruction": "User added successfully! Modify your parameters to add more users: /userc?name=abc&email=abc.com"
         })
@@ -269,7 +283,6 @@ def delete_user_via_url():
 
     try:
         cur = mysql.connection.cursor()
-        
         cur.execute("SELECT user_id FROM tbl_user WHERE user_name = %s", (name,))
         if not cur.fetchone():
             user_list = get_all_users_list(cur)
