@@ -44,7 +44,13 @@ jobs:
 
           # 3. Securely update the root password from 'root' to 'password' to match your app.py config
           sudo mysql -u root -proot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'; FLUSH PRIVILEGES;"
-          
+          if [ -f init.sql ]; then
+            echo "Executing init.sql..."
+            sudo mysql -u root -p'password' < init.sql
+            echo "✅ init.sql executed successfully!"
+          else
+            echo "⚠️ init.sql file not found in the root directory!"
+          fi
           
           # 4. Wait for the app to initialize
           sleep 20
