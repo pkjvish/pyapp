@@ -42,8 +42,8 @@ jobs:
           echo "✅ MySQL is UP and running!"
           echo "'root'@'localhost'"
 
-          # 3. Securely update the root password to 'password'
-          sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'; FLUSH PRIVILEGES;"
+          # 3. Securely update the root password from 'root' to 'password' to match your app.py config
+          sudo mysql -u root -proot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'; FLUSH PRIVILEGES;"
           
           
           # 4. Wait for the app to initialize
