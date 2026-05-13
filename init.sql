@@ -1,7 +1,7 @@
 CREATE DATABASE IF NOT EXISTS crud_db;
 USE crud_db;
 
-EATE TABLE IF NOT EXISTS tbl_user (
+CREATE TABLE IF NOT EXISTS tbl_user (
                 user_id INT AUTO_INCREMENT PRIMARY KEY,
                 user_name VARCHAR(45) NOT NULL,
                 user_email VARCHAR(45) NOT NULL);
