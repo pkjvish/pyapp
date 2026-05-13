@@ -35,13 +35,13 @@ def get_users():
 def set_db():
     try:
         cur = mysql.connection.cursor()
-        
+        print('connection start')
         # 1. Create Database (if it doesn't exist)
         cur.execute("CREATE DATABASE IF NOT EXISTS crud_db")
-        
+         print('DB created')
         # 2. Switch to the database
         cur.execute("USE crud_db")
-        
+         print('using DB')
         # 3. Create Table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS tbl_user (
@@ -50,7 +50,7 @@ def set_db():
                 user_email VARCHAR(45) NOT NULL
             )
         """)
-        
+         print('table created')
         mysql.connection.commit()
         cur.close()
         return jsonify({"message": "Database and Table created successfully!"}), 200
