@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template_string
 from flask_mysqldb import MySQL
 
 app = Flask(__name__)
@@ -25,7 +25,127 @@ def get_all_users_list(cursor):
         })
     return user_list
 
-# 1. LIST ALL USERS FROM DATABASE
+# HTML/CSS/JS Dashboard Template String
+DASHBOARD_HTML = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask CRUD Dashboard</title>
+    <!-- Tailwind CSS for a modern, clean look -->
+    <script src="tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans antialiased text-gray-900">
+    <div class="max-w-5xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8 border-b pb-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-extrabold text-blue-600 tracking-tight">Database Dashboard</h1>
+                <p class="text-sm text-gray-500 mt-1">Live interface connected to MySQL (crud_db)</p>
+            </div>
+            <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <span class="size-1.5 inline-block rounded-full bg-green-500"></span> Live Status: Connected
+            </span>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Left Side Actions Column -->
+            <div class="space-y-6 md:col-span-1">
+                <!-- Create User Box -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        ➕ Add User <span class="text-xs text-blue-500 font-normal">(/userc)</span>
+                    </h3>
+                    <form action="/userc" method="GET" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Full Name</label>
+                            <input type="text" name="name" required placeholder="John Doe" 
+                                class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Email Address</label>
+                            <input type="email" name="email" required placeholder="john@example.com" 
+                                class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition shadow-sm">
+                            Add via URL Redirect
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Delete User Box -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        🗑️ Delete User <span class="text-xs text-red-500 font-normal">(/userd)</span>
+                    </h3>
+                    <form action="/userd" method="GET" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">User Name</label>
+                            <input type="text" name="name" required placeholder="Exact username to delete" 
+                                class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+                        </div>
+                        <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 rounded-lg text-sm transition shadow-sm">
+                            Delete via URL Redirect
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Side User Directory Table Column -->
+            <div class="md:col-span-2">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                            📋 Active User Database <span class="text-xs text-gray-400 font-normal">(/users)</span>
+                        </h3>
+                        <a href="/users" target="_blank" class="text-xs font-medium text-blue-600 hover:underline">
+                            View Raw JSON ↗
+                        </a>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-100 border-b border-gray-200 text-xs font-semibold uppercase text-gray-600 tracking-wider">
+                                    <th class="px-6 py-3">ID</th>
+                                    <th class="px-6 py-3">User Name</th>
+                                    <th class="px-6 py-3">User Email</th>
+                                    <th class="px-6 py-3 text-right">Quick Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                {% for user in users %}
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4 font-semibold text-gray-500">#{{ user.user_id }}</td>
+                                    <td class="px-6 py-4 font-medium text-gray-900">{{ user.user_name }}</td>
+                                    <td class="px-6 py-4 text-gray-600">{{ user.user_email }}</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <a href="/userd?name={{ user.user_name }}" 
+                                           class="inline-flex items-center text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-md transition">
+                                            Remove
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="px-6 py-12 text-center text-gray-400 italic">
+                                        No entries found in tbl_user. Use the sidebar to append data records.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# 1. LIST ALL USERS FROM DATABASE (RAW JSON)
 @app.route('/users', methods=['GET'])
 def list_all_users():
     try:
@@ -33,7 +153,6 @@ def list_all_users():
         user_list = get_all_users_list(cur)
         cur.close()
         
-        # Append target operational instruction line to the end of the JSON array
         user_list.append({
             "instruction": "To add a user, go to /userc?name=abc&email=abc.com. To delete a user, go to /userd?name=abc"
         })
@@ -55,11 +174,9 @@ def add_user_via_url():
 
     try:
         cur = mysql.connection.cursor()
-        # Insert target data records
         cur.execute("INSERT INTO tbl_user(user_name, user_email) VALUES (%s, %s)", (name, email))
         mysql.connection.commit()
         
-        # Grab updated user records array listing
         user_list = get_all_users_list(cur)
         cur.close()
         
@@ -84,7 +201,6 @@ def delete_user_via_url():
     try:
         cur = mysql.connection.cursor()
         
-        # Check if the user profile exists before attempting drop
         cur.execute("SELECT user_id FROM tbl_user WHERE user_name = %s", (name,))
         if not cur.fetchone():
             user_list = get_all_users_list(cur)
@@ -95,11 +211,9 @@ def delete_user_via_url():
             })
             return jsonify(user_list), 404
             
-        # Execute query statement removal operation mapping
         cur.execute("DELETE FROM tbl_user WHERE user_name = %s", (name,))
         mysql.connection.commit()
         
-        # Pull fresh repository layout records state mapping
         user_list = get_all_users_list(cur)
         cur.close()
         
@@ -110,16 +224,17 @@ def delete_user_via_url():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/')
-def hello_world():
-    return jsonify({
-        "message": "Welcome to Flask CRUD Engine!",
-        "endpoints": {
-            "list": "/users",
-            "create": "/userc?name=abc&email=abc.com",
-            "delete": "/userd?name=abc"
-        }
-    })
+# 4. HOME ROUTE SERVING THE RESPONSIVE GUI
+@app.route('/', methods=['GET'])
+def home_dashboard():
+    try:
+        cur = mysql.connection.cursor()
+        current_users = get_all_users_list(cur)
+        cur.close()
+        # Render the template string and feed database data into the HTML loop
+        return render_template_string(DASHBOARD_HTML, users=current_users)
+    except Exception as e:
+        return f"<h3>Database Connection Error:</h3><p>{str(e)}</p><p>Ensure your pipeline's MySQL initialization step executed successfully.</p>", 500
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
