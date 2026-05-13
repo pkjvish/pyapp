@@ -14,6 +14,7 @@ jobs:
       - name: Check Runner IP
         run: |
           curl https://api.ipify.org 
+          echo "private ip "
           hostname -I | awk '{print $1}'
         
       - name: Set up Python
@@ -41,9 +42,9 @@ jobs:
           echo "✅ MySQL is UP and running!"
           echo "'root'@'localhost'"
 
+          # 3. Securely update the root password to 'password'
+          sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'; FLUSH PRIVILEGES;"
           
-          # Set the password to match your app.py config
-          sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'; FLUSH PRIVILEGES;"
           
           # 4. Wait for the app to initialize
           sleep 20
