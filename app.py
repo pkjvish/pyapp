@@ -11,8 +11,8 @@ app.config['MYSQL_DB'] = 'crud_db'
 
 mysql = MySQL(app)
 
-# Helper function to fetch the complete formatted user list
 def get_all_users_list(cursor):
+    """Helper to fetch and parse the raw database records."""
     cursor.execute("SELECT user_id, user_name, user_email FROM tbl_user")
     rows = cursor.fetchall()
     
@@ -25,115 +25,92 @@ def get_all_users_list(cursor):
         })
     return user_list
 
-# HTML/CSS/JS Dashboard Template String
+# SPA Dashboard UI Template
 DASHBOARD_HTML = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flask CRUD Dashboard</title>
-    <!-- Tailwind CSS for a modern, clean look -->
-    <script src="tailwindcss.com"></script>
+    <title>Flask SPA Dashboard</title>
+    <script src="jsdelivr.net"></script>
 </head>
-<body class="bg-gray-50 font-sans antialiased text-gray-900">
-    <div class="max-w-5xl mx-auto px-4 py-8">
+<body class="bg-slate-50 font-sans text-slate-900 antialiased">
+    <div class="mx-auto max-w-5xl px-4 py-8">
+        
         <!-- Header -->
-        <header class="mb-8 border-b pb-4 flex justify-between items-center">
+        <header class="mb-8 flex items-center justify-between border-b border-slate-200 pb-4">
             <div>
-                <h1 class="text-3xl font-extrabold text-blue-600 tracking-tight">Database Dashboard</h1>
-                <p class="text-sm text-gray-500 mt-1">Live interface connected to MySQL (crud_db)</p>
+                <h1 class="text-3xl font-black tracking-tight text-indigo-600">Single Page Application</h1>
+                <p class="mt-1 text-sm text-slate-500">Add or remove users instantly without page reloads</p>
             </div>
-            <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                <span class="size-1.5 inline-block rounded-full bg-green-500"></span> Live Status: Connected
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-600/20">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Live SPA Mode
             </span>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Left Side Actions Column -->
+        <!-- Status Toast Notifications -->
+        <div id="toast" class="hidden mb-6 p-4 rounded-xl text-sm font-medium transition shadow-sm border"></div>
+
+        <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <!-- Sidebar Actions Column -->
             <div class="space-y-6 md:col-span-1">
-                <!-- Create User Box -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        ➕ Add User <span class="text-xs text-blue-500 font-normal">(/userc)</span>
-                    </h3>
-                    <form action="/userc" method="GET" class="space-y-4">
+                <!-- Add User Form -->
+                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h3 class="mb-4 text-base font-bold text-slate-800">➕ Add New User</h3>
+                    <form id="addForm" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Full Name</label>
-                            <input type="text" name="name" required placeholder="John Doe" 
-                                class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Full Name</label>
+                            <input type="text" id="addName" required placeholder="Pankaj Kumar" 
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Email Address</label>
-                            <input type="email" name="email" required placeholder="john@example.com" 
-                                class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Email Address</label>
+                            <input type="email" id="addEmail" required placeholder="pankaj@example.com" 
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
                         </div>
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition shadow-sm">
-                            Add via URL Redirect
+                        <button type="submit" class="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
+                            Save User
                         </button>
                     </form>
                 </div>
 
-                <!-- Delete User Box -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        🗑️ Delete User <span class="text-xs text-red-500 font-normal">(/userd)</span>
-                    </h3>
-                    <form action="/userd" method="GET" class="space-y-4">
+                <!-- Delete User Form -->
+                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h3 class="mb-4 text-base font-bold text-slate-800">🗑️ Delete User by Name</h3>
+                    <form id="deleteForm" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">User Name</label>
-                            <input type="text" name="name" required placeholder="Exact username to delete" 
-                                class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">User Name</label>
+                            <input type="text" id="deleteName" required placeholder="Exact name to delete" 
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
                         </div>
-                        <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 rounded-lg text-sm transition shadow-sm">
-                            Delete via URL Redirect
+                        <button type="submit" class="w-full rounded-lg bg-rose-600 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 transition">
+                            Delete User
                         </button>
                     </form>
                 </div>
             </div>
 
-            <!-- Right Side User Directory Table Column -->
+            <!-- SPA Live User Directory Table -->
             <div class="md:col-span-2">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                            📋 Active User Database <span class="text-xs text-gray-400 font-normal">(/users)</span>
-                        </h3>
-                        <a href="/users" target="_blank" class="text-xs font-medium text-blue-600 hover:underline">
-                            View Raw JSON ↗
-                        </a>
+                <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                    <div class="border-b border-slate-100 bg-slate-50/70 px-6 py-4 flex justify-between items-center">
+                        <h3 class="text-base font-bold text-slate-800">📋 Active Database Directory</h3>
+                        <a href="/users" target="_blank" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline">Raw JSON Engine ↗</a>
                     </div>
                     
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-sm">
                             <thead>
-                                <tr class="bg-gray-100 border-b border-gray-200 text-xs font-semibold uppercase text-gray-600 tracking-wider">
+                                <tr class="border-b border-slate-200 bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
                                     <th class="px-6 py-3">ID</th>
                                     <th class="px-6 py-3">User Name</th>
                                     <th class="px-6 py-3">User Email</th>
-                                    <th class="px-6 py-3 text-right">Quick Action</th>
+                                    <th class="px-6 py-3 text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                {% for user in users %}
-                                <tr class="hover:bg-gray-50 transition">
-                                    <td class="px-6 py-4 font-semibold text-gray-500">#{{ user.user_id }}</td>
-                                    <td class="px-6 py-4 font-medium text-gray-900">{{ user.user_name }}</td>
-                                    <td class="px-6 py-4 text-gray-600">{{ user.user_email }}</td>
-                                    <td class="px-6 py-4 text-right">
-                                        <a href="/userd?name={{ user.user_name }}" 
-                                           class="inline-flex items-center text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-md transition">
-                                            Remove
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="4" class="px-6 py-12 text-center text-gray-400 italic">
-                                        No entries found in tbl_user. Use the sidebar to append data records.
-                                    </td>
-                                </tr>
-                                {% endfor %}
+                            <tbody id="userTableBody" class="divide-y divide-slate-100">
+                                <!-- JavaScript dynamically renders rows here -->
                             </tbody>
                         </table>
                     </div>
@@ -141,11 +118,93 @@ DASHBOARD_HTML = """
             </div>
         </div>
     </div>
+
+    <!-- AJAX SPA Engine Logic -->
+    <script>
+        // Shared Headers config so Flask recognizes the Dashboard Client
+        const dashboardHeaders = { 'X-Requested-From': 'Dashboard' };
+
+        function showToast(message, isSuccess = true) {
+            const toast = document.getElementById('toast');
+            toast.className = `p-4 mb-6 rounded-xl text-sm font-medium transition shadow-sm border ${
+                isSuccess ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'
+            }`;
+            toast.innerText = message;
+        }
+
+        // 1. ASYNC FETCH: Load Users Into Table Without Refreshing
+        async function fetchUsers() {
+            try {
+                const response = await fetch('/users', { headers: dashboardHeaders });
+                const users = await response.json();
+                const tbody = document.getElementById('userTableBody');
+                tbody.innerHTML = '';
+
+                if(users.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-10 text-center text-slate-400 italic">No user profiles found on disk.</td></tr>`;
+                    return;
+                }
+
+                users.forEach(user => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50/80 transition">
+                            <td class="px-6 py-4 font-mono font-bold text-slate-400">#${user.user_id}</td>
+                            <td class="px-6 py-4 font-semibold text-slate-900">${user.user_name}</td>
+                            <td class="px-6 py-4 text-slate-600">${user.user_email}</td>
+                            <td class="px-6 py-4 text-right">
+                                <button onclick="quickDelete('${user.user_name}')" class="rounded-md bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-600 hover:bg-rose-100 transition">Remove</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                showToast("Could not sync data directory.", false);
+            }
+        }
+
+        // 2. ASYNC POST: Add user instantly
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('addName').value;
+            const email = document.getElementById('addEmail').value;
+
+            const res = await fetch(`/userc?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`, { headers: dashboardHeaders });
+            if(res.ok) {
+                showToast(`User "${name}" saved successfully!`);
+                document.getElementById('addForm').reset();
+                fetchUsers();
+            } else {
+                const data = await res.json();
+                showToast(data.error || "Failed to add user.", false);
+            }
+        });
+
+        // 3. ASYNC DELETE: Remove user instantly
+        document.getElementById('deleteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('deleteName').value;
+            await quickDelete(name);
+            document.getElementById('deleteForm').reset();
+        });
+
+        async function quickDelete(name) {
+            const res = await fetch(`/userd?name=${encodeURIComponent(name)}`, { headers: dashboardHeaders });
+            if(res.ok) {
+                showToast(`User "${name}" removed successfully.`);
+                fetchUsers();
+            } else {
+                showToast(`User "${name}" could not be found.`, false);
+            }
+        }
+
+        // Initial Load on bootup
+        window.onload = fetchUsers;
+    </script>
 </body>
 </html>
 """
 
-# 1. LIST ALL USERS FROM DATABASE (RAW JSON)
+# 1. LIST ALL USERS FROM DATABASE
 @app.route('/users', methods=['GET'])
 def list_all_users():
     try:
@@ -153,6 +212,11 @@ def list_all_users():
         user_list = get_all_users_list(cur)
         cur.close()
         
+        # If the request comes from the Web Dashboard SPA, don't append instructional string
+        if request.headers.get('X-Requested-From') == 'Dashboard':
+            return jsonify(user_list), 200
+            
+        # Otherwise, append layout rules for direct URL lookups
         user_list.append({
             "instruction": "To add a user, go to /userc?name=abc&email=abc.com. To delete a user, go to /userd?name=abc"
         })
@@ -180,6 +244,11 @@ def add_user_via_url():
         user_list = get_all_users_list(cur)
         cur.close()
         
+        # If it's a dashboard background request, return clean data right away
+        if request.headers.get('X-Requested-From') == 'Dashboard':
+            return jsonify(user_list), 201
+            
+        # If run directly via address bar URL, append instruction block
         user_list.append({
             "instruction": "User added successfully! Modify your parameters to add more users: /userc?name=abc&email=abc.com"
         })
@@ -205,6 +274,10 @@ def delete_user_via_url():
         if not cur.fetchone():
             user_list = get_all_users_list(cur)
             cur.close()
+            
+            if request.headers.get('X-Requested-From') == 'Dashboard':
+                return jsonify({"error": f"User '{name}' not found"}), 404
+                
             user_list.append({
                 "error": f"User '{name}' not found.",
                 "instruction": "Verify spelling or review active profiles at /users"
@@ -217,6 +290,9 @@ def delete_user_via_url():
         user_list = get_all_users_list(cur)
         cur.close()
         
+        if request.headers.get('X-Requested-From') == 'Dashboard':
+            return jsonify(user_list), 200
+            
         user_list.append({
             "instruction": f"User '{name}' deleted successfully! View changes above or use /userc to append values."
         })
@@ -224,17 +300,10 @@ def delete_user_via_url():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# 4. HOME ROUTE SERVING THE RESPONSIVE GUI
+# 4. HOME ROUTE SERVING THE RESPONSIVE SPA
 @app.route('/', methods=['GET'])
 def home_dashboard():
-    try:
-        cur = mysql.connection.cursor()
-        current_users = get_all_users_list(cur)
-        cur.close()
-        # Render the template string and feed database data into the HTML loop
-        return render_template_string(DASHBOARD_HTML, users=current_users)
-    except Exception as e:
-        return f"<h3>Database Connection Error:</h3><p>{str(e)}</p><p>Ensure your pipeline's MySQL initialization step executed successfully.</p>", 500
+    return render_template_string(DASHBOARD_HTML)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
