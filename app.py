@@ -11,23 +11,45 @@ app.config['MYSQL_DB'] = 'crud_db'
 
 mysql = MySQL(app)
 
-# 1. URL Query Parameter Method (GET)
 @app.route('/users', methods=['GET'])
 def add_user_via_query():
     name = request.args.get('name')
     email = request.args.get('email')
 
-    if not name or not email:
-        return jsonify({"error": "Missing query parameters. Provide name and email."}), 400
-
     try:
         cur = mysql.connection.cursor()
+        
+        # 1. Insert the new user entry from URL parameters
         cur.execute("INSERT INTO tbl_user(user_name, user_email) VALUES (%s, %s)", (name, email))
         mysql.connection.commit()
+        
+        # 2. Fetch the entire updated user list from the database
+        cur.execute("SELECT user_id, user_name, user_email FROM tbl_user")
+        rows = cur.fetchall() # Returns a tuple of records
         cur.close()
-        return jsonify({"message": f"User '{name}' added via URL successfully!"}), 201
+        
+        # 3. Format database records into a clean JSON serializable list
+        user_list = []
+        for row in rows:
+            user_list.append({
+                "user_id": row[0],
+                "user_name": row[1],
+                "user_email": row[2]
+            })
+            
+        # 4. Append the instruction block as the LAST row of the JSON array
+        user_list.append({
+            "instruction": "To add more users, modify your URL parameters like this: /users?name=abc&email=abc.com"
+        })
+        
+        return jsonify(user_list), 201
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "error": str(e),
+            "instruction": "Verify that your MySQL server is running and the 'crud_db' database is fully initialized."
+        }), 500
+
 
 # 2. JSON Body Payload Method (POST) - Renamed route to keep it distinct if needed
 @app.route('/save/users', methods=['POST'])
